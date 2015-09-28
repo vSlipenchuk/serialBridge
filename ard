@@ -1,0 +1,32 @@
+case "$1" in
+ rep)
+  echo  -ne "\nREP HERE $2 $3 $4 $5\n" > /dev/ttyS0
+  echo $3 > /tmp/$2.rep
+ ;;
+ out)
+   # called internally to pack a command on a proper way
+   echo "[!$2]" > /dev/ttyS0
+ ;; 
+ on)
+   $0 out "on $2"
+ ;;
+ off)
+   $0 out "off$2"
+ ;;
+ dht)
+   rm -rf /tmp/dht.rep
+   $0 out dht
+   for i in 0 1 2 3 4 5; do
+    if [ -r /tmp/dht.rep ];
+      then
+      cat /tmp/dht.rep
+      break;
+    else 
+    sleep 1
+    fi
+   done
+ ;;
+ *)
+ echo "usage  pin>"
+ ;;
+esac
