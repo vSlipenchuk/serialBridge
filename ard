@@ -1,17 +1,48 @@
+
+wait_rep() {
+for i in 0 1 2 3 4 5 6 7 8 9 
+do
+ [ -r /tmp/$1.rep ] && break
+ sleep 1
+done
+}
+
 case "$1" in
  rep)
-  echo  -ne "\nREP HERE $2 $3 $4 $5\n" > /dev/ttyS0
+  #echo  -ne "\nREP HERE $2 $3 $4 $5\n" > /dev/ttyS0
   echo $3 > /tmp/$2.rep
  ;;
  out)
    # called internally to pack a command on a proper way
    echo "[!$2]" > /dev/ttyS0
  ;; 
+ exch)
+ rm -rf /tmp/$3.rep
+ $0 out "$2"
+ wait_rep $3
+ cat /tmp/$3.rep
+ ;; 
  on)
    $0 out "on $2"
  ;;
  off)
    $0 out "off$2"
+ ;;
+ nxt|toggle)
+   $0 out "nxt$2"
+ ;;
+ blink)
+  for i in 0 1 2 3 4 5 ;do
+    echo "ON 13"
+    $0 on 13
+    sleep 1
+    echo "OFF 13"
+    $0 off 13
+    sleep 1
+   done
+;;
+ termo|temp)
+   $0 exch "termo$2" termo
  ;;
  dht)
    rm -rf /tmp/dht.rep
@@ -27,6 +58,7 @@ case "$1" in
    done
  ;;
  *)
- echo "usage  pin>"
+echo "usage <on|off|nxt|termo> <pin> "
  ;;
 esac
+

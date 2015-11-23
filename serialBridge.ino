@@ -6,7 +6,8 @@
 
 
  //#include "boardOne.c"
- #include "boardTwo.c"
+ //#include "boardTwo.c"
+ #include "boardThree.c"
  //#define debug_serial 10,11
  
 int ready = 0; // async reports starts after [!hello]
@@ -132,8 +133,12 @@ double Therm(int RawADC) {  //Function to perform the fancy math of the Steinhar
   //[!termo]
  double Temp;
  out("RAW-ACD:"+String(RawADC));  // 498 -> 26.16 but - same on 3.3v ADC=650, 12.94
- //Temp = log(((10240000/RawADC) - 10000)); // Pull -down
+ #ifdef thermo_pulldown
+  Temp = log(((10240000/RawADC) - 10000)); // Pull -down
+ #else
    Temp =log(10000.0/(1024.0/RawADC-1)) ; // Pull-up
+#endif
+
  Temp = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp ))* Temp );
  Temp = Temp - 273.15;              // Convert Kelvin to Celsius
  //Temp = (Temp * 9.0)/ 5.0 + 32.0; // Celsius to Fahrenheit - comment out this line if you need Celsius
