@@ -16,7 +16,11 @@ int SCAN=A3; // scan this pin on input change
 
 int d=1;// 2 for 8mhz
 
-
+#ifdef rtc_DS1307
+#include <Wire.h>
+#include "RTClib.h"
+RTC_DS1307 rtc;
+#endif
 
 #ifdef rf_recv
 #include <RCSwitch.h>
@@ -82,6 +86,11 @@ void setup()
 
    #ifdef dht11
    dht.begin();
+   #endif
+
+   #ifdef rtc_DS1307
+   rtc.begin();
+   //rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
    #endif
   
   //out("Hello " boardName " is here ");
@@ -163,6 +172,8 @@ void do_temp(int pin) {
 
 #endif
 
+char buf2[20];
+
 void do_command(char *cmd) { // command processor
 //out(">>>> command: "); 
   out(cmd);
@@ -173,6 +184,28 @@ if (memcmp(cmd,"hello",5)==0) {
 else if (memcmp(cmd,"on",2)==0)  do_gpio(cmd+2,1);
 else if (memcmp(cmd,"off",3)==0) do_gpio(cmd+3,0);
 else if (memcmp(cmd,"nxt",3)==0) do_gpio(cmd+3,2);
+#ifdef  rtc_DS1307
+else if (memcmp(cmd,"now",3)==0) {
+   DateTime now = rtc.now();
+ 
+   sprintf(buf2,"now %04d%02d%02d_%02d%02d%02d",now.year(),now.month(),now.day(),now.hour(),now.minute(),now.second());
+   // sprintf(buf2,"now %02d%02d%02d",now.hour(),now.minute(),now.second());
+   //do_report("now very_long_string_buf2");
+   do_report(buf2);
+   //do_report("now ZU");
+   }
+else if (memcmp(cmd,"dt=",3)==0) { // set date exactly "YYYYMMDD hhmmss"
+   cmd+=3;
+   int ss=atoi(cmd+13); cmd[13]=0;
+   int mm=atoi(cmd+11); cmd[11]=0;
+   int hh=atoi(cmd+9);  cmd[8]=0;
+   int DD=atoi(cmd+6);  cmd[6]=0;
+   int MM=atoi(cmd+4);  cmd[4]=0;
+  // do_report("REST"+ String(cmd));
+   int YY=atoi(cmd);
+   rtc.adjust(DateTime(YY,MM,DD,hh,mm,ss));
+}
+#endif
 #ifdef termo
 else if (memcmp(cmd,"termo",5)==0) do_temp(atoi(cmd+5));
 #endif

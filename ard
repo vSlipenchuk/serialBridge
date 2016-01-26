@@ -1,4 +1,8 @@
 
+
+#change it - get real console from cat /proc/cmdline
+con=/dev/ttyS1
+
 wait_rep() {
 for i in 0 1 2 3 4 5 6 7 8 9 
 do
@@ -8,13 +12,17 @@ done
 }
 
 case "$1" in
+ push)
+  scp ard 192.168.1.1:/usr/bin/ard
+
+  ;;
  rep)
-  #echo  -ne "\nREP HERE $2 $3 $4 $5\n" > /dev/ttyS0
+  #echo  -ne "\nREP HERE $2 $3 $4 $5\n" > $con
   echo $3 > /tmp/$2.rep
  ;;
  out)
    # called internally to pack a command on a proper way
-   echo "[!$2]" > /dev/ttyS0
+   echo "[!$2]" > $con
  ;; 
  exch)
  rm -rf /tmp/$3.rep
@@ -43,6 +51,15 @@ case "$1" in
 ;;
  termo|temp)
    $0 exch "termo$2" termo
+ ;;
+ now|date)
+   $0 exch "now" now
+ ;;
+ dt|setdate)
+  v=$2
+  if [ v="" ]; then v=`date "+%Y%m%d_%H%M%S"`; fi
+  echo "SET_DATE $v"
+  $0 out "dt=$v"
  ;;
  dht)
    rm -rf /tmp/dht.rep

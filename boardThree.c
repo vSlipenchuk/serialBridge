@@ -7,6 +7,7 @@
 #define boardName    "boardTree"
 
 //[!nxt13][!nxt13] [!off13]
+//[!now] [!dt=20051112 051223]
 
 #define bridgeSpeed 57600 /* RT5350 normal speed is 57600, but need setup 57600/2 for 8Mhz internal proc */
 
@@ -14,4 +15,6 @@
 
 //#define thermo_pulldown 1
 #define  termo         A6,A7 /* 14,15 /* = A0,A1 - termoresistors [!term0] */
+
+#define rtc_DS1307 /* if we need RTC (now,dt=)  functions */
 
