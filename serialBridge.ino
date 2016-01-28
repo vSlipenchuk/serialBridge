@@ -12,9 +12,27 @@
  
 int ready = 0; // async reports starts after [!hello]
 
+
 int SCAN=A3; // scan this pin on input change
 
 int d=1;// 2 for 8mhz
+
+#ifdef ir_pin
+#include <IRremote.h>
+IRrecv irrecv(ir_pin);
+decode_results results;
+#endif
+
+
+#ifdef lcd_HD44780
+#ifndef lcd_size
+#define lcd_size 16,2
+#endif
+
+#include <LiquidCrystal.h>
+LiquidCrystal lcd( lcd_HD44780 );
+
+#endif
 
 #ifdef rtc_DS1307
 #include <Wire.h>
@@ -92,6 +110,19 @@ void setup()
    rtc.begin();
    //rtc.adjust(DateTime(2014, 1, 21, 3, 0, 0));
    #endif
+
+   #ifdef lcd_HD44780
+    lcd.begin(lcd_size);
+    lcd.setCursor(0,0);
+    lcd.print(boardName); // print board name after reboot
+   #endif
+
+   
+#ifdef ir_pin
+   irrecv.enableIRIn(); 
+#endif
+
+
   
   //out("Hello " boardName " is here ");
 }
@@ -175,6 +206,7 @@ void do_temp(int pin) {
 char buf2[20];
 
 void do_command(char *cmd) { // command processor
+  
 //out(">>>> command: "); 
   out(cmd);
 if (memcmp(cmd,"hello",5)==0) {
@@ -206,6 +238,15 @@ else if (memcmp(cmd,"dt=",3)==0) { // set date exactly "YYYYMMDD hhmmss"
    rtc.adjust(DateTime(YY,MM,DD,hh,mm,ss));
 }
 #endif
+#ifdef lcd_HD44780
+else if (memcmp(cmd,"lcd",3)==0) { // lcd<LINE>text...
+  cmd+=3; buf2[0]=cmd[0]; buf2[1]=0; int x = atoi(buf2); cmd+=1; // rest is a text
+  buf2[0]=cmd[0]; buf2[1]=0; int  y = atoi(buf2); cmd+=1; // rest is a text
+  lcd.setCursor(x, y );
+  lcd.print(cmd); //print a rest
+  }
+#endif
+
 #ifdef termo
 else if (memcmp(cmd,"termo",5)==0) do_temp(atoi(cmd+5));
 #endif
@@ -233,7 +274,15 @@ int mode=-1;
 
 void loop() // run over and over
 {
-
+#ifdef ir_pin
+ if (irrecv.decode(&results)) {
+    sprintf(buf2,"%lX",results.value);
+    if (ready)  do_report("ir "+String(buf2)); // only after [!hello]
+//    /Serial.println(results.value, HEX);
+   // dump(&results);
+    irrecv.resume(); // Receive the next value
+  }
+#endif
   int imode = digitalRead(SCAN)==HIGH; if (imode!=mode) {
     mode=imode;
     // out("ScanChanged:"+String(mode)); --> report for buttons

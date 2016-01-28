@@ -19,6 +19,9 @@ case "$1" in
  rep)
   #echo  -ne "\nREP HERE $2 $3 $4 $5\n" > $con
   echo $3 > /tmp/$2.rep
+  if [ "$2" = "ir" ]; then
+    /cfg/on_ir $3 &
+  fi
  ;;
  out)
    # called internally to pack a command on a proper way
@@ -52,6 +55,9 @@ case "$1" in
  termo|temp)
    $0 exch "termo$2" termo
  ;;
+ hello)
+   $0 exch hello hello
+ ;;
  now|date)
    $0 exch "now" now
  ;;
@@ -60,6 +66,14 @@ case "$1" in
   if [ v="" ]; then v=`date "+%Y%m%d_%H%M%S"`; fi
   echo "SET_DATE $v"
   $0 out "dt=$v"
+ ;;
+ lcd)
+   $0 out "lcd00                 "
+   $0 out "lcd00 $2"
+ ;;
+ lcd1)
+   $0 out "lcd01                 "
+   $0 out "lcd01 $2"
  ;;
  dht)
    rm -rf /tmp/dht.rep
